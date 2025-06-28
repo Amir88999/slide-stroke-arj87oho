@@ -1,1 +1,0 @@
-# slide-stroke-arj87oho
