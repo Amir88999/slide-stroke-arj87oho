@@ -12,31 +12,23 @@
   <a-scene
     vr-mode-ui="enabled: false;"
     loading-screen="enabled: false;"
-    renderer="logarithmicDepthBuffer: true; shadowMap: { enabled: true }"
+    renderer="logarithmicDepthBuffer: true; antialias: true; shadowMapEnabled: true; shadowMapType: basic;"
     arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
     embedded
     gesture-detector
   >
+    <!-- Assets -->
     <a-assets>
       <a-asset-item id="animated-asset" src="assets/asset.glb"></a-asset-item>
     </a-assets>
 
-    <!-- Lighting with Shadows -->
-    <a-entity light="type: ambient; intensity: 0.6"></a-entity>
-    <a-entity 
-      light="type: directional; color: #ffffff; intensity: 0.8; castShadow: true"
-      position="0 3 2"
-      rotation="-45 0 0"
-    ></a-entity>
+    <!-- Lighting with High-Quality Shadows -->
+    <a-entity light="type: ambient; intensity: 0.5"></a-entity>
+    <a-entity light="type: directional; intensity: 0.8; castShadow: true; shadowMapHeight: 2048; shadowMapWidth: 2048;"
+              position="2 4 3" rotation="-45 -30 0">
+    </a-entity>
 
-    <!-- Shadow receiving plane (invisible but catches shadow) -->
-    <a-entity 
-      geometry="primitive: plane; width: 1; height: 1;"
-      rotation="-90 0 0"
-      material="color: #000; opacity: 0"
-      shadow="receive: true"
-    ></a-entity>
-
+    <!-- Marker + Model -->
     <a-marker
       id="animated-marker"
       type="pattern"
@@ -46,21 +38,31 @@
       emitevents="true"
       cursor="fuse: false; rayOrigin: mouse;"
     >
+      <!-- The 3D Model -->
       <a-entity
         id="model"
         gltf-model="#animated-asset"
         class="clickable"
-        scale="0.015688 0.015688 0.015688"
+        scale="0.2098 0.2098 0.2098"
         animation-mixer="loop: repeat"
         gesture-handler
         shadow="cast: true"
       ></a-entity>
+
+      <!-- Shadow Receiver -->
+      <a-entity
+        geometry="primitive: plane; width: 3; height: 3;"
+        rotation="-90 0 0"
+        material="color: #000; opacity: 0"
+        shadow="receive: true"
+      ></a-entity>
     </a-marker>
 
+    <!-- AR Camera -->
     <a-entity camera></a-entity>
   </a-scene>
 
-  <!-- Pause Button -->
+  <!-- Pause Button UI -->
   <button id="toggleAnimBtn" style="
     position: absolute;
     bottom: 20px;
@@ -71,7 +73,7 @@
     font-size: 16px;
     border: none;
     border-radius: 6px;
-    background-color: rgba(255,255,255,0.8);
+    background-color: rgba(255,255,255,0.85);
     color: black;
     font-weight: bold;
   ">
@@ -81,8 +83,8 @@
   <script>
     const toggleBtn = document.getElementById("toggleAnimBtn");
     const model = document.querySelector("#model");
-
     let isPaused = false;
+
     toggleBtn.addEventListener("click", () => {
       if (!model) return;
       if (isPaused) {
