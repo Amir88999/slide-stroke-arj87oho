@@ -1,14 +1,61 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <title>Slide Stroke Karakuri AR</title>
   <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
   <script src="https://raw.githack.com/donmccurdy/aframe-extras/master/dist/aframe-extras.loaders.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-detector.js"></script>
   <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-handler.js"></script>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+
+    #trivia-box {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      max-width: 360px;
+      background-color: rgba(0, 0, 0, 0.55);
+      color: white;
+      font-size: 13px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      z-index: 2;
+      line-height: 1.4em;
+      pointer-events: none;
+    }
+
+    #toggleAnimBtn {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      background-color: rgba(255,255,255,0.85);
+      color: black;
+      font-weight: bold;
+    }
+  </style>
 </head>
 
-<body style="margin: 0; overflow: hidden;">
+<body>
+  <!-- Trivia Overlay -->
+  <div id="trivia-box">
+    <strong>Slide Stroke Karakuri:</strong><br>
+    Slide stroke mechanisms guide parts in a straight path, useful for pushing or aligning components precisely.<br><br>
+    In Karakuri setups, this motion mimics pneumatic or hydraulic slides, but without needing any power, making it ideal for simple automation.
+  </div>
+
+  <!-- AR Scene -->
   <a-scene
     vr-mode-ui="enabled: false;"
     loading-screen="enabled: false;"
@@ -21,7 +68,7 @@
       <a-asset-item id="animated-asset" src="assets/asset.glb"></a-asset-item>
     </a-assets>
 
-    <!-- Lighting with Shadows -->
+    <!-- Lighting -->
     <a-entity light="type: ambient; intensity: 0.6"></a-entity>
     <a-entity 
       light="type: directional; color: #ffffff; intensity: 0.8; castShadow: true"
@@ -29,7 +76,7 @@
       rotation="-45 0 0"
     ></a-entity>
 
-    <!-- Shadow receiving plane (invisible but catches shadow) -->
+    <!-- Invisible shadow catcher -->
     <a-entity 
       geometry="primitive: plane; width: 1; height: 1;"
       rotation="-90 0 0"
@@ -37,6 +84,7 @@
       shadow="receive: true"
     ></a-entity>
 
+    <!-- Marker & Model -->
     <a-marker
       id="animated-marker"
       type="pattern"
@@ -61,22 +109,7 @@
   </a-scene>
 
   <!-- Pause Button -->
-  <button id="toggleAnimBtn" style="
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 2;
-    padding: 10px 20px;
-    font-size: 16px;
-    border: none;
-    border-radius: 6px;
-    background-color: rgba(255,255,255,0.8);
-    color: black;
-    font-weight: bold;
-  ">
-    Pause Animation
-  </button>
+  <button id="toggleAnimBtn">Pause Animation</button>
 
   <script>
     const toggleBtn = document.getElementById("toggleAnimBtn");
@@ -85,13 +118,8 @@
     let isPaused = false;
     toggleBtn.addEventListener("click", () => {
       if (!model) return;
-      if (isPaused) {
-        model.setAttribute("animation-mixer", "timeScale: 1");
-        toggleBtn.textContent = "Pause Animation";
-      } else {
-        model.setAttribute("animation-mixer", "timeScale: 0");
-        toggleBtn.textContent = "Play Animation";
-      }
+      model.setAttribute("animation-mixer", `timeScale: ${isPaused ? 1 : 0}`);
+      toggleBtn.textContent = isPaused ? "Pause Animation" : "Play Animation";
       isPaused = !isPaused;
     });
   </script>
