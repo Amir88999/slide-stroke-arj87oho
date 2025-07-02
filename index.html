@@ -3,11 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <title>Slide Stroke Karakuri AR</title>
+
+  <!-- A-Frame & AR.js -->
   <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
   <script src="https://raw.githack.com/donmccurdy/aframe-extras/master/dist/aframe-extras.loaders.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-detector.js"></script>
   <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-handler.js"></script>
+
   <style>
     body {
       margin: 0;
@@ -30,11 +33,10 @@
       pointer-events: none;
     }
 
-    #toggleAnimBtn {
+    #toggleAnimBtn,
+    #toggleShadowBtn {
       position: fixed;
       bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
       z-index: 2;
       padding: 10px 20px;
       font-size: 16px;
@@ -44,11 +46,21 @@
       color: black;
       font-weight: bold;
     }
+
+    #toggleAnimBtn {
+      left: 50%;
+      transform: translateX(-110%);
+    }
+
+    #toggleShadowBtn {
+      left: 50%;
+      transform: translateX(10%);
+    }
   </style>
 </head>
 
 <body>
-  <!-- Trivia Overlay -->
+  <!-- Trivia Box -->
   <div id="trivia-box">
     <strong>Slide Stroke Karakuri:</strong><br>
     Slide stroke mechanisms guide parts in a straight path, useful for pushing or aligning components precisely.<br><br>
@@ -57,34 +69,46 @@
 
   <!-- AR Scene -->
   <a-scene
+    embedded
     vr-mode-ui="enabled: false;"
     loading-screen="enabled: false;"
-    renderer="logarithmicDepthBuffer: true; shadowMap: { enabled: true }"
+    shadow="type: pcfsoft"
+    renderer="logarithmicDepthBuffer: true; antialias: true; shadowMapEnabled: true; shadowMapType: PCFSoftShadowMap;"
     arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
-    embedded
     gesture-detector
   >
+    <!-- Assets -->
     <a-assets>
       <a-asset-item id="animated-asset" src="assets/asset.glb"></a-asset-item>
     </a-assets>
 
     <!-- Lighting -->
     <a-entity light="type: ambient; intensity: 0.6"></a-entity>
-    <a-entity 
+    <a-entity
+      id="main-light"
       light="type: directional; color: #ffffff; intensity: 0.8; castShadow: true"
       position="0 3 2"
       rotation="-45 0 0"
+      shadow-camera-near="0.1"
+      shadow-camera-far="10"
+      shadow-camera-left="-2"
+      shadow-camera-right="2"
+      shadow-camera-top="2"
+      shadow-camera-bottom="-2"
+      shadow-map-width="4096"
+      shadow-map-height="4096"
     ></a-entity>
 
-    <!-- Invisible shadow catcher -->
-    <a-entity 
+    <!-- Shadow Catching Plane -->
+    <a-entity
+      id="shadow-plane"
       geometry="primitive: plane; width: 1; height: 1;"
       rotation="-90 0 0"
-      material="color: #000; opacity: 0"
+      material="color: #ccc; opacity: 0.001; transparent: true"
       shadow="receive: true"
     ></a-entity>
 
-    <!-- Marker & Model -->
+    <!-- Marker and Model -->
     <a-marker
       id="animated-marker"
       type="pattern"
@@ -108,19 +132,39 @@
     <a-entity camera></a-entity>
   </a-scene>
 
-  <!-- Pause Button -->
+  <!-- Control Buttons -->
   <button id="toggleAnimBtn">Pause Animation</button>
+  <button id="toggleShadowBtn">Disable Shadow</button>
 
+  <!-- Script -->
   <script>
-    const toggleBtn = document.getElementById("toggleAnimBtn");
+    const toggleAnimBtn = document.getElementById("toggleAnimBtn");
+    const toggleShadowBtn = document.getElementById("toggleShadowBtn");
+
     const model = document.querySelector("#model");
+    const light = document.querySelector("#main-light");
+    const plane = document.querySelector("#shadow-plane");
 
     let isPaused = false;
-    toggleBtn.addEventListener("click", () => {
+    let shadowEnabled = true;
+
+    // Animation Toggle
+    toggleAnimBtn.addEventListener("click", () => {
       if (!model) return;
       model.setAttribute("animation-mixer", `timeScale: ${isPaused ? 1 : 0}`);
-      toggleBtn.textContent = isPaused ? "Pause Animation" : "Play Animation";
+      toggleAnimBtn.textContent = isPaused ? "Pause Animation" : "Play Animation";
       isPaused = !isPaused;
+    });
+
+    // Shadow Toggle
+    toggleShadowBtn.addEventListener("click", () => {
+      shadowEnabled = !shadowEnabled;
+
+      model.setAttribute("shadow", `cast: ${shadowEnabled}`);
+      plane.setAttribute("shadow", `receive: ${shadowEnabled}`);
+      light.setAttribute("light", "castShadow", shadowEnabled);
+
+      toggleShadowBtn.textContent = shadowEnabled ? "Disable Shadow" : "Enable Shadow";
     });
   </script>
 </body>
